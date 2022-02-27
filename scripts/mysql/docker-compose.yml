@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  master:
+    image: mysql:${MYSQL_VERSION}
+    container_name: mysql_master
+    restart: "always"
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+      - "--server-id=100"
+      - "--log-bin=mysql-bin"
+    ports:
+      - 33061:3306
+    volumes:
+      - ./data/master:/var/lib/mysql
+      - ./sql/create_sync_user.sql:/docker-entrypoint-initdb.d/create_sync_user.sql
+    networks:
+      - mysql-net
+
+  slave:
+    image: mysql:${MYSQL_VERSION}
+    container_name: mysql_slave
+    restart: "always"
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+      - "--server-id=200"
+      - "--log-bin=mysql-bin"
+    ports:
+      - 33062:3306
+    volumes:
+      - ./data/slave:/var/lib/mysql
+      - ./sql/start_slave.sql:/docker-entrypoint-initdb.d/start_slave.sql
+    networks:
+      - mysql-net
+    depends_on:
+      - master
+
+networks:
+  mysql-net:
+    driver: bridge
