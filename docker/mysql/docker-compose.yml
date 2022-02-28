@@ -1,0 +1,54 @@
+version: "3"
+
+services:
+  mysql_master:
+    image: mysql:${MYSQL_VERSION}
+    container_name: mysql_master
+    hostname: mysql_master
+    restart: "always"
+    environment:
+      - LANG=en_US.UTF-8
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    command:
+      - --default-authentication-plugin=caching_sha2_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --server-id=100
+      - --log-bin=mysql-bin
+    ports:
+      - 33061:3306
+    volumes:
+      - ./data/master:/var/lib/mysql
+      - ./sql/master:/docker-entrypoint-initdb.d
+    networks:
+      - fileserver-net
+
+  mysql_slave:
+    image: mysql:${MYSQL_VERSION}
+    container_name: mysql_slave
+    hostname: mysql_slave
+    restart: "always"
+    environment:
+      - LANG=en_US.UTF-8
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    command:
+      - --default-authentication-plugin=caching_sha2_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --server-id=200
+      - --log-bin=mysql-bin
+    ports:
+      - 33062:3306
+    volumes:
+      - ./data/slave:/var/lib/mysql
+      - ./sql/slave:/docker-entrypoint-initdb.d
+    networks:
+      - fileserver-net
+    depends_on:
+      - mysql_master
+
+networks:
+  fileserver-net:
+    driver: bridge
