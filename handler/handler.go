@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -36,10 +37,11 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 		fileMeta := meta.FileMeta{
 			FileName: head.Filename,
-			Location: "/tmp/" + head.Filename,
+			Location: "/tmp/filestore/" + head.Filename,
 			UploadAt: time.Now().Format("2006-01-02 15:04:05"),
 		}
 
+		os.MkdirAll(path.Dir(fileMeta.Location), 0744)
 		newFile, err := os.Create(fileMeta.Location)
 		if err != nil {
 			fmt.Printf("Failed to create file, err:%s\n", err.Error())

@@ -17,9 +17,9 @@ services:
       - --server-id=100
       - --log-bin=mysql-bin
     ports:
-      - 33061:3306
+      - 3306:3306
     volumes:
-      - ./data/master:/var/lib/mysql
+      - ./data/mysql_master:/var/lib/mysql
       - ./sql/master:/docker-entrypoint-initdb.d
     networks:
       - fileserver-net
@@ -40,14 +40,30 @@ services:
       - --server-id=200
       - --log-bin=mysql-bin
     ports:
-      - 33062:3306
+      - 33061:3306
     volumes:
-      - ./data/slave:/var/lib/mysql
+      - ./data/mysql_slave:/var/lib/mysql
       - ./sql/slave:/docker-entrypoint-initdb.d
     networks:
       - fileserver-net
     depends_on:
       - mysql_master
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: redis
+    hostname: redis
+    restart: "always"
+    environment:
+      - LANG=en_US.UTF-8
+      - TZ=Asia/Shanghai
+    command: redis-server --port 6379 --requirepass ${REDIS_PASSWORD} --appendonly no
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - fileserver-net
 
 networks:
   fileserver-net:
