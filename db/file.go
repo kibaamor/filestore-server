@@ -25,7 +25,7 @@ func OnFileUploadFinished(filehash string, filename string, filesize int64, file
 
 	if rf, err := ret.RowsAffected(); nil == err {
 		if rf <= 0 {
-			fmt.Printf("File with hash:%s has been uploaded before", filehash)
+			fmt.Printf("File with hash:%s has been uploaded before\n", filehash)
 		}
 		return true
 	}
@@ -52,8 +52,13 @@ func GetFileMeta(filehash string) (*TableFile, error) {
 	tfile := TableFile{}
 	err = stmt.QueryRow(filehash).Scan(&tfile.FileHash, &tfile.FileAddr, &tfile.FileName, &tfile.FileSize)
 	if err != nil {
-		fmt.Println("Failed to query statement, err:" + err.Error())
-		return nil, err
+		if err == sql.ErrNoRows {
+			// 查不到对应记录， 返回参数及错误均为nil
+			return nil, nil
+		} else {
+			fmt.Println(err.Error())
+			return nil, err
+		}
 	}
 	return &tfile, nil
 }

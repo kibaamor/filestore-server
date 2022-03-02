@@ -16,13 +16,7 @@ const (
 //SignupHandler:处理用户注册请求
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		// data, err := ioutil.ReadFile("./static/view/signup.html")
-		// if err != nil {
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-		// w.Write(data)
-		http.Redirect(w, r, "/static/view/signup.html", http.StatusFound)
+		http.Redirect(w, r, "/static/view/signup.html?"+r.Form.Encode(), http.StatusFound)
 		return
 	}
 
@@ -46,7 +40,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 //SigninHandler:登录接口
 func SigninHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		http.Redirect(w, r, "/static/view/signin.html", http.StatusFound)
+		http.Redirect(w, r, "/static/view/signin.html?"+r.Form.Encode(), http.StatusFound)
 		return
 	}
 
