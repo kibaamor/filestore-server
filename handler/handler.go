@@ -123,10 +123,16 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	filehash := r.Form.Get("filehash")
-	fm := meta.GetFileMeta(filehash)
+	fm, err := meta.GetFileMetaDB(filehash)
+	if err != nil {
+		fmt.Println(filehash, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	f, err := os.Open(fm.Location)
 	if err != nil {
+		fmt.Println(fm.Location, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -134,6 +140,7 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
+		fmt.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	dblayer "github.com/kibaamor/filestore-server/db"
@@ -129,4 +130,21 @@ func IsTokenValid(username string, token string) bool {
 	// TODO: 从数据库表tbl_user_token查询username对应的token信息
 	// TODO: 对比两个token是否一致
 	return true
+}
+
+// DownloadURLHandler : 生成文件的下载地址
+func DownloadURLHandler(w http.ResponseWriter, r *http.Request) {
+	filehash := r.Form.Get("filehash")
+	// 从文件表查找记录
+	row, _ := dblayer.GetFileMeta(filehash)
+
+	if strings.HasPrefix(row.FileAddr.String, "/tmp") {
+		username := r.Form.Get("username")
+		token := r.Form.Get("token")
+		tmpUrl := fmt.Sprintf("http://%s/file/download?filehash=%s&username=%s&token=%s",
+			r.Host, filehash, username, token)
+		w.Write([]byte(tmpUrl))
+	} else {
+		w.WriteHeader(http.StatusForbidden)
+	}
 }
